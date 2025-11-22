@@ -573,7 +573,7 @@ export const LearnPath: React.FC = () => {
             <div key={unit.id} className="relative mb-8">
                 {/* Sticky Unit Header */}
                 <div className={`
-                    sticky top-[64px] z-40 mx-4 mb-8 ${idx === 0 ? 'mt-0' : 'mt-2'} p-5 rounded-3xl flex justify-between items-center shadow-lg shadow-black/5 transition-transform
+                    sticky top-[64px] z-40 mx-4 mb-8 p-5 rounded-3xl flex justify-between items-center shadow-lg shadow-black/5 transition-transform
                     ${unit.color === 'primary' ? 'bg-[#c9f158] text-black' : ''}
                     ${unit.color === 'sky' ? 'bg-sky-500 text-white' : ''}
                     ${unit.color === 'purple' ? 'bg-purple-500 text-white' : ''}
