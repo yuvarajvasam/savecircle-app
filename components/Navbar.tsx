@@ -23,7 +23,7 @@ export const Navbar: React.FC = () => {
   ];
 
   return (
-    <div className="w-full z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-t border-border-light dark:border-white/5 transition-colors duration-300">
+    <div className="fixed bottom-0 left-0 right-0 w-full z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-t border-border-light dark:border-white/5 transition-colors duration-300 safe-area-inset-bottom">
       <nav className="flex justify-between items-center px-6 py-2 max-w-md mx-auto">
         {navItems.map((item) => {
             const isActive = location.pathname === item.path || (item.path === '/circles' && location.pathname.startsWith('/circles'));
