@@ -29,10 +29,8 @@ export const InstallPrompt: React.FC = () => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
       
-      // Show prompt after a short delay (give user time to see the app)
-      setTimeout(() => {
-        setShowPrompt(true);
-      }, 3000); // Show after 3 seconds
+      // Show prompt immediately when available
+      setShowPrompt(true);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);

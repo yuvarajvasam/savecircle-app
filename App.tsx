@@ -14,6 +14,7 @@ import { Signup } from './pages/Signup';
 import { Welcome } from './pages/Welcome';
 import { Navbar } from './components/Navbar';
 import { InstallPrompt } from './components/InstallPrompt';
+import { BiometricLock } from './components/BiometricLock';
 import { Notifications } from './pages/Notifications';
 import { Leaderboard } from './pages/Leaderboard';
 import { CreateCircle } from './pages/CreateCircle';
@@ -42,6 +43,21 @@ const App: React.FC = () => {
     return localStorage.getItem('savecircle_onboarded') === 'true';
   });
 
+  // Biometric lock state
+  const [isBiometricEnabled, setIsBiometricEnabled] = useState<boolean>(() => {
+    return localStorage.getItem('savecircle_biometric_enabled') === 'true';
+  });
+  const [isUnlocked, setIsUnlocked] = useState<boolean>(() => {
+    // Check if we need to show lock screen
+    if (!isBiometricEnabled) return true;
+    // Check if app was just opened (not from background)
+    const lastUnlockTime = localStorage.getItem('savecircle_last_unlock');
+    if (!lastUnlockTime) return false;
+    // If unlocked within last 30 seconds, don't require re-authentication
+    const timeSinceUnlock = Date.now() - parseInt(lastUnlockTime);
+    return timeSinceUnlock < 30000; // 30 seconds
+  });
+
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'light') {
@@ -50,6 +66,67 @@ const App: React.FC = () => {
       document.documentElement.classList.add('dark');
     }
   }, [isAuthenticated]);
+
+  // Listen for biometric setting changes and app visibility
+  useEffect(() => {
+    const checkBiometric = () => {
+      const enabled = localStorage.getItem('savecircle_biometric_enabled') === 'true';
+      setIsBiometricEnabled(enabled);
+      if (!enabled) {
+        setIsUnlocked(true);
+        return;
+      }
+      
+      // If biometrics is enabled, check if we need to lock
+      const lastUnlockTime = localStorage.getItem('savecircle_last_unlock');
+      if (!lastUnlockTime) {
+        setIsUnlocked(false);
+        return;
+      }
+      
+      const timeSinceUnlock = Date.now() - parseInt(lastUnlockTime);
+      // Lock if more than 30 seconds have passed
+      setIsUnlocked(timeSinceUnlock < 30000);
+    };
+
+    // Check on mount
+    checkBiometric();
+
+    // Listen for storage changes (when settings are updated)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'savecircle_biometric_enabled') {
+        checkBiometric();
+      }
+    };
+
+    // Handle app visibility changes (when app comes back from background)
+    const handleVisibilityChange = () => {
+      if (!document.hidden && isBiometricEnabled) {
+        // App became visible, check if we need to lock
+        checkBiometric();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    // Also check periodically (for same-tab updates)
+    const interval = setInterval(checkBiometric, 1000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearInterval(interval);
+    };
+  }, [isBiometricEnabled]);
+
+  const handleBiometricUnlock = () => {
+    setIsUnlocked(true);
+    localStorage.setItem('savecircle_last_unlock', Date.now().toString());
+  };
+
+  // Show biometric lock if enabled and not unlocked
+  const showBiometricLock = isBiometricEnabled && !isUnlocked && isAuthenticated && hasOnboarded;
 
   const handleAuth = () => {
     setIsAuthenticated(true);
@@ -67,6 +144,8 @@ const App: React.FC = () => {
       <div className="h-[100dvh] w-screen bg-gray-100 dark:bg-black flex justify-center font-display overflow-hidden transition-colors duration-300">
         {/* App container fixed to parent height */}
         <div className="w-full max-w-md bg-background-light dark:bg-background-dark h-full relative shadow-2xl flex flex-col overflow-hidden transition-colors duration-300">
+          {/* Biometric Lock Screen */}
+          {showBiometricLock && <BiometricLock onUnlock={handleBiometricUnlock} />}
           <Routes>
             {/* Public Routes */}
             <Route 

@@ -207,7 +207,9 @@ export const Settings: React.FC = () => {
   // Local Settings State (Mock)
   const [notifications, setNotifications] = useState(true);
   const [sounds, setSounds] = useState(true);
-  const [biometrics, setBiometrics] = useState(false);
+  const [biometrics, setBiometrics] = useState(() => {
+    return localStorage.getItem('savecircle_biometric_enabled') === 'true';
+  });
 
   const toggleTheme = (mode: 'light' | 'dark') => {
     setTheme(mode);
@@ -386,7 +388,24 @@ export const Settings: React.FC = () => {
                     </div>
                     <span className="font-medium text-base text-text-primary-light dark:text-white">App Lock (Biometrics)</span>
                  </div>
-                 <Switch checked={biometrics} onChange={() => setBiometrics(!biometrics)} />
+                 <Switch 
+                   checked={biometrics} 
+                   onChange={() => {
+                     const newValue = !biometrics;
+                     setBiometrics(newValue);
+                     localStorage.setItem('savecircle_biometric_enabled', newValue.toString());
+                     // If disabling, remove stored credential
+                     if (!newValue) {
+                       localStorage.removeItem('biometric_credential_id');
+                       localStorage.removeItem('savecircle_last_unlock');
+                     }
+                     // Trigger storage event for App.tsx to pick up
+                     window.dispatchEvent(new StorageEvent('storage', {
+                       key: 'savecircle_biometric_enabled',
+                       newValue: newValue.toString()
+                     }));
+                   }} 
+                 />
               </div>
            </div>
         </section>
