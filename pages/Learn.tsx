@@ -245,8 +245,8 @@ export const Learn: React.FC = () => {
       return (
           <div className="h-full flex flex-col items-center justify-center bg-background-light dark:bg-background-dark text-text-primary-light dark:text-white">
               <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
-              <p className="font-bold text-lg animate-pulse">Generating Lesson...</p>
-              <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-2">Powered by Gemini</p>
+              <p className="font-bold text-lg animate-pulse">Preparing Your Lesson...</p>
+              <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-2">Creating personalized content just for you</p>
           </div>
       );
   }

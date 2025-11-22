@@ -73,7 +73,7 @@ export const About: React.FC = () => {
          <div className="mt-auto flex items-center gap-1 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark opacity-60">
              <span>Made with</span>
              <Heart size={12} className="fill-red-500 text-red-500" />
-             <span>in Bengaluru</span>
+             <span>by Yuvaraj Vasam</span>
          </div>
 
       </main>

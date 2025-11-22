@@ -140,7 +140,7 @@ export const Guide: React.FC = () => {
           <div className="h-full flex flex-col items-center justify-center bg-background-light dark:bg-background-dark text-text-primary-light dark:text-white transition-colors duration-300">
               <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
               <p className="font-bold text-lg animate-pulse">Preparing Guide...</p>
-              <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-2">Powered by Gemini</p>
+              <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-2">Crafting your learning materials</p>
           </div>
       );
   }
