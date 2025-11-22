@@ -54,7 +54,7 @@ export const HelpCenter: React.FC = () => {
          <div className="w-12"></div>
       </header>
 
-      <main className="flex-1 overflow-y-auto p-4 pb-8">
+      <main className="flex-1 overflow-y-auto p-4 pb-32">
          
          {/* Search */}
          <div className="relative mb-8">
