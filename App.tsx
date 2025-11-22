@@ -13,6 +13,7 @@ import { Login } from './pages/Login';
 import { Signup } from './pages/Signup';
 import { Welcome } from './pages/Welcome';
 import { Navbar } from './components/Navbar';
+import { InstallPrompt } from './components/InstallPrompt';
 import { Notifications } from './pages/Notifications';
 import { Leaderboard } from './pages/Leaderboard';
 import { CreateCircle } from './pages/CreateCircle';
@@ -150,6 +151,8 @@ const App: React.FC = () => {
                     </div>
                     {/* Fixed Bottom Navbar */}
                     <Navbar />
+                    {/* PWA Install Prompt */}
+                    <InstallPrompt />
                   </div>
                 )
               } 
