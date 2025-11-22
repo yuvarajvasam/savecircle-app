@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/Button';
-import { User, Users, Calendar, Target, Repeat, Wallet, Sparkles, Search } from 'lucide-react';
+import { User, Users, Calendar, Target, Repeat, Wallet, Sparkles } from 'lucide-react';
 import { getUser, addCircle } from '../utils/storage';
 import { Circle } from '../types';
 import { CircleIcon, ICON_MAP } from '../components/CircleIcon';
@@ -19,8 +19,7 @@ export const CreateCircle: React.FC = () => {
   const [selectedIcon, setSelectedIcon] = useState<string>('Wallet');
   const [iconType, setIconType] = useState<'lucide' | 'emoji'>('lucide');
   // Default color to white since picker is removed, keeping state for compatibility
-  const [iconColor, setIconColor] = useState<string>('text-white'); 
-  const [customEmoji, setCustomEmoji] = useState('');
+  const [iconColor, setIconColor] = useState<string>('text-white');
   
   const [selectedTheme, setSelectedTheme] = useState('obsidian');
   
@@ -64,15 +63,6 @@ export const CreateCircle: React.FC = () => {
   const handleIconSelect = (icon: string, type: 'lucide' | 'emoji') => {
       setSelectedIcon(icon);
       setIconType(type);
-  };
-
-  const handleCustomEmojiChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const val = e.target.value;
-      setCustomEmoji(val);
-      if (val) {
-          setSelectedIcon(val);
-          setIconType('emoji');
-      }
   };
 
   const handleCreate = () => {
@@ -264,22 +254,6 @@ export const CreateCircle: React.FC = () => {
 
                  {activeIconTab === 'emojis' && (
                      <div className="space-y-5">
-                         <div>
-                             <label className="text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider mb-2 block">Custom Emoji</label>
-                             <div className="relative">
-                                 <input 
-                                    type="text" 
-                                    value={customEmoji}
-                                    onChange={handleCustomEmojiChange}
-                                    placeholder="Type an emoji..."
-                                    className="w-full bg-gray-100 dark:bg-white/5 rounded-xl py-3 pl-10 pr-4 font-bold text-text-primary-light dark:text-white focus:ring-2 focus:ring-primary/50 border-none"
-                                 />
-                                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-lg">
-                                     {customEmoji || <Search size={18} className="text-gray-400" />}
-                                 </div>
-                             </div>
-                         </div>
-
                          <div>
                              <p className="text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider mb-3">Popular</p>
                              <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2 -mx-2 px-2">

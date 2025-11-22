@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { MOCK_SHOP_ITEMS } from '../constants';
 import { getUser, updateUser } from '../utils/storage';
 import { Heart, Zap, Shield, Sparkles, Lock, Check, Gem, X, Infinity } from 'lucide-react';
@@ -105,6 +105,7 @@ const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ isOpen, onClose }
 
 export const Shop: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   
   // Sync state with storage
   const [userGems, setUserGems] = useState(getUser().gems);
@@ -114,10 +115,10 @@ export const Shop: React.FC = () => {
       return parseInt(localStorage.getItem('savecircle_hearts') || '5');
   });
 
-  // Refresh on mount
+  // Refresh gems when navigating to this page (location change)
   useEffect(() => {
       setUserGems(getUser().gems);
-  }, []);
+  }, [location.pathname]);
 
   const handleBuy = (cost: number, itemId?: string) => {
     if (userGems >= cost) {
@@ -332,3 +333,4 @@ export const Shop: React.FC = () => {
     </div>
   );
 };
+

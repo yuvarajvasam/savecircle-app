@@ -161,7 +161,7 @@ export const LearnPath: React.FC = () => {
       return parseInt(localStorage.getItem('savecircle_hearts') || '5');
   });
   const [gems, setGems] = useState(() => {
-      return parseInt(localStorage.getItem('savecircle_gems') || INITIAL_USER.gems.toString());
+      return getUser().gems;
   });
 
   const observerTarget = useRef(null);
@@ -172,10 +172,10 @@ export const LearnPath: React.FC = () => {
       const calculateProgress = () => {
           const storedCompleted = JSON.parse(localStorage.getItem('savecircle_completed_lessons') || '[]');
           const storedHearts = localStorage.getItem('savecircle_hearts');
-          const storedGems = localStorage.getItem('savecircle_gems');
           
           if (storedHearts) setHearts(parseInt(storedHearts));
-          if (storedGems) setGems(parseInt(storedGems));
+          // Sync gems from user object to ensure consistency
+          setGems(getUser().gems);
 
           let firstCurrentFound = false;
           let calculatedActiveUnit = 1;

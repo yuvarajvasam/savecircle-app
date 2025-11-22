@@ -6,6 +6,7 @@ import { X, Check, PiggyBank, Loader2, Gift, Heart, HeartCrack, Plus } from 'luc
 import { Button } from '../components/Button';
 import { GoogleGenAI, Type } from "@google/genai";
 import { getStaticLesson, INITIAL_USER } from '../constants';
+import { getUser, updateUser } from '../utils/storage';
 
 // Initialize Gemini
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -54,8 +55,7 @@ export const Learn: React.FC = () => {
 
   // Persistent Gems State
   const [userGems, setUserGems] = useState(() => {
-      const stored = localStorage.getItem('savecircle_gems');
-      return stored ? parseInt(stored) : INITIAL_USER.gems;
+      return getUser().gems;
   });
 
   const [isGameOver, setIsGameOver] = useState(false);
@@ -178,15 +178,18 @@ export const Learn: React.FC = () => {
           completed.push(id);
           localStorage.setItem('savecircle_completed_lessons', JSON.stringify(completed));
           
-          // 2. Update XP
-          const currentXp = parseInt(localStorage.getItem('savecircle_xp') || '2500');
+          // 2. Update XP and Gems using updateUser (which syncs both user object and legacy keys)
+          const user = getUser();
           const xpGain = type === 'reward' ? 100 : 20;
-          localStorage.setItem('savecircle_xp', (currentXp + xpGain).toString());
-
-          // 3. Update Gems
-          const currentGems = parseInt(localStorage.getItem('savecircle_gems') || INITIAL_USER.gems.toString());
           const gemGain = type === 'reward' ? 50 : 10;
-          localStorage.setItem('savecircle_gems', (currentGems + gemGain).toString());
+          
+          updateUser({
+              xp: user.xp + xpGain,
+              gems: user.gems + gemGain
+          });
+          
+          // Update local state to reflect changes
+          setUserGems(user.gems + gemGain);
       }
 
       navigate('/learn');
