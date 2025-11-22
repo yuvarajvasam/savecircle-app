@@ -4,22 +4,13 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Button } from '../components/Button';
 import { GoogleGenAI, Type } from "@google/genai";
 import { Loader2 } from 'lucide-react';
+import { getStaticGuide, GuideContent } from '../constants';
 
 // Initialize Gemini
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-interface GuideSection {
-    title: string;
-    text?: string;
-    highlight?: string;
-    items?: { label: string; desc: string; icon: string }[];
-}
-
-interface GuideContent {
-    title: string;
-    description: string;
-    sections: GuideSection[];
-}
+// GuideContent interface is imported from constants.ts
+// Using the imported type
 
 export const Guide: React.FC = () => {
   const navigate = useNavigate();
@@ -46,31 +37,10 @@ export const Guide: React.FC = () => {
             }
         }
 
-        // Unit 1 Hardcoded Fallback (Faster)
-        if (unitId === '1') {
-            const staticContent = {
-                title: "Intro to Investing",
-                description: "Learn how to make your money grow over time through smart asset allocation.",
-                sections: [
-                    {
-                        title: "What is Investing?",
-                        text: "Investing is the act of allocating resources, usually money, with the expectation of generating an income or profit. Unlike saving, which is setting money aside for safety, investing involves taking calculated risks to grow wealth."
-                    },
-                    {
-                        title: "Risk vs. Reward",
-                        text: "There is always a trade-off. Higher risk investments generally offer the potential for higher returns, while lower risk investments offer stability but lower growth.",
-                        highlight: "Pro Tip: Diversification (buying different types of assets) is the best way to manage risk without sacrificing all your potential gains."
-                    },
-                    {
-                        title: "Key Asset Classes",
-                        items: [
-                        { label: "Stocks (Equities)", desc: "Buying a small piece of ownership in a company. High potential growth, higher risk.", icon: "trending_up" },
-                        { label: "Bonds (Fixed Income)", desc: "Loaning money to a government or company in exchange for interest payments. Lower risk, steady income.", icon: "account_balance" },
-                        { label: "ETFs", desc: "A basket of securities that trades on an exchange like a stock. Instant diversification.", icon: "pie_chart" }
-                        ]
-                    }
-                ]
-            };
+        // Check if it's a predefined unit (1-10) - use static guide
+        const unitIdNum = parseInt(unitId || '0');
+        if (unitIdNum > 0 && unitIdNum <= 10) {
+            const staticContent = getStaticGuide(unitId, unitTitle);
             setContent(staticContent);
             // Save static content to LS for consistency
             localStorage.setItem(storageKey, JSON.stringify(staticContent));
@@ -78,7 +48,7 @@ export const Guide: React.FC = () => {
             return;
         }
 
-        // Dynamic Generation for other units
+        // Dynamic Generation for units 11+
         try {
             const response = await ai.models.generateContent({
                 model: "gemini-2.5-flash",

@@ -25,7 +25,7 @@ export default defineConfig(({ mode }) => {
             name: 'SaveCircle',
             short_name: 'SaveCircle',
             description: 'A gamified, social money-saving application designed to build consistency through streaks and circles.',
-            theme_color: '#c9f158',
+            theme_color: '#202020',
             background_color: '#202020',
             display: 'standalone',
             orientation: 'portrait',

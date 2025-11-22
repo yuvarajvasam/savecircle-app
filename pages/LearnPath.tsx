@@ -184,18 +184,15 @@ export const LearnPath: React.FC = () => {
               let unitCompletedCount = 0;
               
               const updatedLessons = unit.lessons.map((lesson: any) => {
-                  // Determine Stars (Fake deterministic based on ID for demo)
-                  const stars = (lesson.id.charCodeAt(lesson.id.length - 1) % 3) + 1; 
-
                   if (storedCompleted.includes(lesson.id)) {
                       unitCompletedCount++;
-                      return { ...lesson, status: 'completed', stars };
+                      return { ...lesson, status: 'completed' };
                   } else if (!firstCurrentFound) {
                       firstCurrentFound = true;
                       calculatedActiveUnit = unit.id;
-                      return { ...lesson, status: 'current', stars: 0 };
+                      return { ...lesson, status: 'current' };
                   } else {
-                      return { ...lesson, status: 'locked', stars: 0 };
+                      return { ...lesson, status: 'locked' };
                   }
               });
 
@@ -237,24 +234,34 @@ export const LearnPath: React.FC = () => {
   }, [units, loading]);
 
   const generateMoreUnits = async () => {
+    if (loading) return; // Prevent multiple simultaneous calls
     setLoading(true);
     try {
       const lastUnit = units[units.length - 1];
+      if (!lastUnit) return;
+      
+      // Determine next color cyclically
+      const colors = ['primary', 'sky', 'purple'];
+      const lastColorIndex = colors.indexOf(lastUnit.color);
+      const nextColor = colors[(lastColorIndex + 1) % colors.length];
       
       const response = await ai.models.generateContent({
         model: "gemini-2.5-flash",
         contents: `
-          The current financial literacy curriculum ends with "${lastUnit.title}". 
-          Generate 2 NEW, SEQUENTIAL units that logically follow this topic.
+          The current financial literacy curriculum ends with "${lastUnit.title}" (${lastUnit.description}). 
+          Generate 2 NEW, SEQUENTIAL units that logically follow this topic and continue the learning path.
           
-          Return a JSON array.
+          Each unit should have 4-5 lessons (mix of quiz and save types).
+          The last lesson should always be a reward type.
+          
+          Return a JSON array with exactly 2 units.
           Schema per unit:
-          - title (string)
-          - description (string)
-          - color (string: choose cyclically from "primary", "sky", "purple")
+          - title (string): Clear, engaging unit title
+          - description (string): Brief description of what students will learn
+          - color (string): Must be one of "primary", "sky", or "purple"
           - lessons (array of 4-5 objects):
-            - topic (string)
-            - type (string: "quiz" or "save")
+            - topic (string): Specific lesson topic
+            - type (string): Must be "quiz" or "save"
         `,
         config: {
             responseMimeType: "application/json",
@@ -276,7 +283,8 @@ export const LearnPath: React.FC = () => {
                                 }
                             }
                         }
-                    }
+                    },
+                    required: ['title', 'description', 'color', 'lessons']
                 }
             }
         }
@@ -288,18 +296,32 @@ export const LearnPath: React.FC = () => {
         // Transform Gemini data to match our internal state structure
         const newUnits = newUnitsData.map((u: any, idx: number) => {
             const newId = units.length + idx + 1;
+            const unitColor = u.color && ['primary', 'sky', 'purple'].includes(u.color) 
+                ? u.color 
+                : colors[(lastColorIndex + idx + 1) % colors.length];
+            
+            // Ensure we have lessons
+            const lessons = Array.isArray(u.lessons) && u.lessons.length > 0 
+                ? u.lessons 
+                : [
+                    { topic: 'Introduction', type: 'quiz' },
+                    { topic: 'Key Concepts', type: 'quiz' },
+                    { topic: 'Practical Application', type: 'save' },
+                    { topic: 'Advanced Topics', type: 'quiz' }
+                  ];
+            
             return {
                 id: newId,
-                title: u.title,
-                description: u.description,
-                color: u.color || 'primary',
+                title: u.title || `Unit ${newId}`,
+                description: u.description || `Continue your financial education journey.`,
+                color: unitColor,
                 lessons: [
-                    ...u.lessons.map((l: any, lIdx: number) => ({
+                    ...lessons.map((l: any, lIdx: number) => ({
                         id: `${newId}-${lIdx + 1}`,
-                        type: l.type,
-                        topic: l.topic
+                        type: l.type === 'save' ? 'save' : 'quiz', // Ensure valid type
+                        topic: l.topic || `Lesson ${lIdx + 1}`
                     })),
-                    { id: `${newId}-${u.lessons.length + 1}`, type: 'reward', topic: 'Unit Reward' }
+                    { id: `${newId}-${lessons.length + 1}`, type: 'reward', topic: 'Unit Reward' }
                 ]
             };
         });
@@ -309,10 +331,13 @@ export const LearnPath: React.FC = () => {
             localStorage.setItem('savecircle_units', JSON.stringify(updated));
             return updated;
         });
+      } else {
+        console.error("No response text from Gemini");
       }
 
     } catch (error) {
       console.error("Failed to generate new units:", error);
+      // Don't set loading to false on error to allow retry
     } finally {
       setLoading(false);
     }
@@ -320,7 +345,7 @@ export const LearnPath: React.FC = () => {
 
   const renderUnit = (unit: any) => {
     const BTN_SIZE = 72;
-    const GAP = 48;
+    const GAP = 80; // Increased to accommodate lesson names
     const BASE_WIDTH = 400; // SVG viewBox width
 
     let currentY = 0;
@@ -407,6 +432,7 @@ export const LearnPath: React.FC = () => {
                             fill="none" 
                             stroke={strokeColor} 
                             strokeWidth="8" 
+                            strokeDasharray="15 15"
                             strokeLinecap="round" 
                             strokeLinejoin="round"
                             className="transition-all duration-700 ease-out"
@@ -456,6 +482,11 @@ export const LearnPath: React.FC = () => {
                 // Adjust translateY for pressed effect
                 const translateY = isLocked ? '' : 'active:translate-y-[6px] active:shadow-none transition-all';
 
+                // Determine which side to place the lesson name
+                const nameOnRight = xPct < 50; // Left or center-left lessons get name on right
+                const nameOnLeft = xPct > 50; // Right lessons get name on left
+                const nameSide = nameOnRight ? 'right' : nameOnLeft ? 'left' : 'right'; // Default to right for center
+
                 return (
                     <div 
                         key={lesson.id} 
@@ -490,16 +521,12 @@ export const LearnPath: React.FC = () => {
                              )}
                         </Link>
 
-                        {/* Stars for Completed Lessons */}
-                        {isCompleted && !isReward && (
-                            <div className="absolute -bottom-8 flex gap-0.5">
-                                {[1, 2, 3].map(s => (
-                                    <Star 
-                                        key={s} 
-                                        size={12} 
-                                        className={`${s <= lesson.stars ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300 dark:text-gray-700'}`} 
-                                    />
-                                ))}
+                        {/* Lesson Name - Positioned to the side */}
+                        {!isReward && (
+                            <div 
+                                className={`absolute top-1/2 -translate-y-1/2 z-20 max-w-[120px] ${nameSide === 'right' ? 'left-full ml-3 text-left' : 'right-full mr-3 text-right'} ${isLocked ? 'text-gray-400 dark:text-gray-600' : isCompleted || isCurrent ? 'text-text-primary-light dark:text-white font-bold' : 'text-text-secondary-light dark:text-text-secondary-dark'}`}
+                            >
+                                <p className="text-xs font-medium leading-tight">{lesson.topic}</p>
                             </div>
                         )}
                     </div>
@@ -566,7 +593,7 @@ export const LearnPath: React.FC = () => {
                 </div>
 
                 {/* Lessons Path */}
-                <div className="relative z-[1] w-full">
+                <div className="relative z-[1] w-full px-4">
                     {renderUnit(unit)}
                 </div>
             </div>
