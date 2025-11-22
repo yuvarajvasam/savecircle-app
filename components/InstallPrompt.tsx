@@ -133,24 +133,21 @@ export const InstallPrompt: React.FC = () => {
 
           {/* Actions */}
           <div className="flex items-center gap-2">
-            {deferredPrompt ? (
-              <button
-                onClick={handleInstall}
-                className="px-4 py-2 bg-primary text-primary-content rounded-xl font-semibold text-sm hover:opacity-90 active:scale-95 transition-all"
-              >
-                Install
-              </button>
-            ) : (
-              <button
-                onClick={() => {
-                  // For iOS or when prompt not available, just hide temporarily
-                  handleDismiss();
-                }}
-                className="px-4 py-2 bg-primary text-primary-content rounded-xl font-semibold text-sm hover:opacity-90 active:scale-95 transition-all"
-              >
-                Got it
-              </button>
-            )}
+            <button
+              onClick={deferredPrompt ? handleInstall : () => {
+                // For iOS or when prompt not available, show instructions
+                if (isIOS) {
+                  alert('To install:\n1. Tap the Share button\n2. Select "Add to Home Screen"');
+                } else {
+                  // Try to trigger install or show instructions
+                  alert('Install prompt will appear when available. Please use your browser\'s menu to install this app.');
+                }
+                handleDismiss();
+              }}
+              className="px-4 py-2 bg-primary text-primary-content rounded-xl font-semibold text-sm hover:opacity-90 active:scale-95 transition-all"
+            >
+              Install
+            </button>
             <button
               onClick={handleDismiss}
               className="p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
