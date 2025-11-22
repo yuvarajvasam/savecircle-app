@@ -229,7 +229,8 @@ export const Learn: React.FC = () => {
       if (userGems >= REFILL_COST) {
           const newGems = userGems - REFILL_COST;
           setUserGems(newGems);
-          localStorage.setItem('savecircle_gems', newGems.toString());
+          // Use updateUser to sync both user object and legacy localStorage key
+          updateUser({ gems: newGems });
           
           updateHearts(5);
           setIsGameOver(false);

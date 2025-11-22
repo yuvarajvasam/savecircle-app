@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { getCircles, getUser } from '../utils/storage';
 import { 
   Bell, 
@@ -18,9 +18,16 @@ import { CircleIcon } from '../components/CircleIcon';
 import { TourGuide, TourStep } from '../components/TourGuide';
 
 export const Home: React.FC = () => {
+  const location = useLocation();
   const [user, setUser] = useState(getUser());
   const [circles, setCircles] = useState(getCircles());
   const [showTour, setShowTour] = useState(false);
+  
+  // Sync user state when navigating to this page
+  useEffect(() => {
+    setUser(getUser());
+    setCircles(getCircles());
+  }, [location.pathname]);
   
   // Re-fetch on focus to keep UI in sync when navigating back
   useEffect(() => {
