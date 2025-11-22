@@ -51,12 +51,24 @@ const App: React.FC = () => {
   const [isUnlocked, setIsUnlocked] = useState<boolean>(() => {
     // Check if we need to show lock screen
     if (!isBiometricEnabled) return true;
-    // Check if app was just opened (not from background)
+    // Always lock on fresh app open - check if there's a last unlock time
     const lastUnlockTime = localStorage.getItem('savecircle_last_unlock');
-    if (!lastUnlockTime) return false;
-    // If unlocked within last 30 seconds, don't require re-authentication
+    if (!lastUnlockTime) return false; // Fresh open, require authentication
+    
+    // Get user's preferred timeout setting
+    const timeoutSetting = localStorage.getItem('savecircle_biometric_timeout') || '30'; // Default 30 seconds
+    const timeoutSeconds = parseInt(timeoutSetting);
+    
+    // If timeout is 0, always require authentication
+    if (timeoutSeconds === 0) return false;
+    
+    // If timeout is "Never" (86400), stay unlocked until app closes
+    if (timeoutSeconds === 86400) return true;
+    
+    const timeoutMs = timeoutSeconds * 1000;
+    // Check if unlocked within the timeout period
     const timeSinceUnlock = Date.now() - parseInt(lastUnlockTime);
-    return timeSinceUnlock < 30000; // 30 seconds
+    return timeSinceUnlock < timeoutMs;
   });
 
   useEffect(() => {
@@ -81,29 +93,48 @@ const App: React.FC = () => {
       // If biometrics is enabled, check if we need to lock
       const lastUnlockTime = localStorage.getItem('savecircle_last_unlock');
       if (!lastUnlockTime) {
+        setIsUnlocked(false); // Fresh open, require authentication
+        return;
+      }
+      
+      // Get user's preferred timeout setting
+      const timeoutSetting = localStorage.getItem('savecircle_biometric_timeout') || '30'; // Default 30 seconds
+      const timeoutSeconds = parseInt(timeoutSetting);
+      
+      // If timeout is 0, always require authentication
+      if (timeoutSeconds === 0) {
         setIsUnlocked(false);
         return;
       }
       
+      // If timeout is "Never" (86400), stay unlocked until app closes
+      if (timeoutSeconds === 86400) {
+        setIsUnlocked(true);
+        return;
+      }
+      
+      const timeoutMs = timeoutSeconds * 1000;
       const timeSinceUnlock = Date.now() - parseInt(lastUnlockTime);
-      // Lock if more than 30 seconds have passed
-      setIsUnlocked(timeSinceUnlock < 30000);
+      // Lock if more than the timeout period has passed
+      setIsUnlocked(timeSinceUnlock < timeoutMs);
     };
 
     // Check on mount
     checkBiometric();
 
-    // Listen for storage changes (when settings are updated)
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'savecircle_biometric_enabled') {
-        checkBiometric();
-      }
-    };
 
     // Handle app visibility changes (when app comes back from background)
     const handleVisibilityChange = () => {
       if (!document.hidden && isBiometricEnabled) {
-        // App became visible, check if we need to lock
+        // App became visible, always check if we need to lock
+        // This ensures lock screen appears when returning from background
+        checkBiometric();
+      }
+    };
+    
+    // Also check when storage changes (for timeout setting updates)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'savecircle_biometric_enabled' || e.key === 'savecircle_biometric_timeout') {
         checkBiometric();
       }
     };

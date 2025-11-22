@@ -210,6 +210,9 @@ export const Settings: React.FC = () => {
   const [biometrics, setBiometrics] = useState(() => {
     return localStorage.getItem('savecircle_biometric_enabled') === 'true';
   });
+  const [biometricTimeout, setBiometricTimeout] = useState(() => {
+    return localStorage.getItem('savecircle_biometric_timeout') || '30'; // Default 30 seconds
+  });
 
   const toggleTheme = (mode: 'light' | 'dark') => {
     setTheme(mode);
@@ -381,7 +384,7 @@ export const Settings: React.FC = () => {
         <section>
            <h3 className="text-text-secondary-light dark:text-text-secondary-dark text-xs font-bold uppercase mb-3 px-2 tracking-wider">Security</h3>
            <div className="bg-card-light dark:bg-card-dark rounded-[1.5rem] overflow-hidden border border-border-light dark:border-white/5 shadow-sm dark:shadow-none transition-colors duration-300">
-              <div className="flex items-center justify-between p-4">
+              <div className="flex items-center justify-between p-4 border-b border-border-light dark:border-white/5">
                  <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-background-light dark:bg-background-dark flex items-center justify-center text-text-primary-light dark:text-white">
                         <Lock size={20} />
@@ -407,6 +410,50 @@ export const Settings: React.FC = () => {
                    }} 
                  />
               </div>
+              
+              {/* Timeout Setting - Only show if biometrics is enabled */}
+              {biometrics && (
+                <div className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-medium text-text-primary-light dark:text-white">Lock Timeout</span>
+                    <span className="text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                      {biometricTimeout === '0' ? 'Immediately' : 
+                       biometricTimeout === '30' ? '30 seconds' :
+                       biometricTimeout === '60' ? '1 minute' :
+                       biometricTimeout === '300' ? '5 minutes' :
+                       biometricTimeout === '900' ? '15 minutes' :
+                       biometricTimeout === '3600' ? '1 hour' :
+                       biometricTimeout === '86400' ? 'Never' :
+                       `${parseInt(biometricTimeout) / 60} minutes`}
+                    </span>
+                  </div>
+                  <select
+                    value={biometricTimeout}
+                    onChange={(e) => {
+                      const newTimeout = e.target.value;
+                      setBiometricTimeout(newTimeout);
+                      localStorage.setItem('savecircle_biometric_timeout', newTimeout);
+                      // Trigger storage event for App.tsx to pick up
+                      window.dispatchEvent(new StorageEvent('storage', {
+                        key: 'savecircle_biometric_timeout',
+                        newValue: newTimeout
+                      }));
+                    }}
+                    className="w-full bg-background-light dark:bg-background-dark border border-border-light dark:border-white/10 rounded-xl p-3 text-text-primary-light dark:text-white font-medium focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                  >
+                    <option value="0">Immediately (always lock)</option>
+                    <option value="30">30 seconds</option>
+                    <option value="60">1 minute</option>
+                    <option value="300">5 minutes</option>
+                    <option value="900">15 minutes</option>
+                    <option value="3600">1 hour</option>
+                    <option value="86400">Never (until app closes)</option>
+                  </select>
+                  <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-2">
+                    App will lock after this time when returning from background
+                  </p>
+                </div>
+              )}
            </div>
         </section>
 
