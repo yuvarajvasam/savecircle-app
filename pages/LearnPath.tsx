@@ -254,10 +254,16 @@ export const LearnPath: React.FC = () => {
           Each unit should have 4-5 lessons (mix of quiz and save types).
           The last lesson should always be a reward type.
           
+          IMPORTANT: Descriptions must be VERY BRIEF - maximum 5-7 words, similar to these examples:
+          - "Learn how to make your money grow."
+          - "Master the 50/30/20 rule."
+          - "Understand scores and loans."
+          - "Savings, checking, and interest."
+          
           Return a JSON array with exactly 2 units.
           Schema per unit:
           - title (string): Clear, engaging unit title
-          - description (string): Brief description of what students will learn
+          - description (string): VERY BRIEF description (5-7 words max, like the examples above)
           - color (string): Must be one of "primary", "sky", or "purple"
           - lessons (array of 4-5 objects):
             - topic (string): Specific lesson topic
@@ -310,10 +316,20 @@ export const LearnPath: React.FC = () => {
                     { topic: 'Advanced Topics', type: 'quiz' }
                   ];
             
+            // Truncate description to be brief (max 50 characters or ~7 words)
+            let description = u.description || `Continue your financial education journey.`;
+            if (description.length > 50) {
+                const words = description.split(' ');
+                description = words.slice(0, 7).join(' ');
+                if (description.length > 50) {
+                    description = description.substring(0, 47) + '...';
+                }
+            }
+            
             return {
                 id: newId,
                 title: u.title || `Unit ${newId}`,
-                description: u.description || `Continue your financial education journey.`,
+                description: description,
                 color: unitColor,
                 lessons: [
                     ...lessons.map((l: any, lIdx: number) => ({
