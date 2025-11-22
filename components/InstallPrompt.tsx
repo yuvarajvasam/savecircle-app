@@ -10,27 +10,30 @@ export const InstallPrompt: React.FC = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
     // Check if app is already installed
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      setIsInstalled(true);
+    const checkInstalled = () => {
+      if (window.matchMedia('(display-mode: standalone)').matches) {
+        setIsInstalled(true);
+        return true;
+      }
+      return false;
+    };
+
+    if (checkInstalled()) {
       return;
     }
 
-    // Check if user has dismissed the prompt before
-    const dismissed = localStorage.getItem('pwa_install_dismissed');
-    if (dismissed === 'true') {
-      return;
-    }
+    // Detect iOS
+    const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    setIsIOS(isIOSDevice);
 
-    // Listen for the beforeinstallprompt event
+    // Listen for the beforeinstallprompt event (Android/Chrome)
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      
-      // Show prompt immediately when available
-      setShowPrompt(true);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -39,13 +42,29 @@ export const InstallPrompt: React.FC = () => {
     window.addEventListener('appinstalled', () => {
       setIsInstalled(true);
       setShowPrompt(false);
-      localStorage.setItem('pwa_install_dismissed', 'true');
     });
+
+    // Show prompt after a delay if not installed
+    // Check every 30 seconds if user hasn't installed
+    const showPromptTimer = setTimeout(() => {
+      if (!checkInstalled()) {
+        setShowPrompt(true);
+      }
+    }, 3000); // Show after 3 seconds
+
+    // Periodically check and show prompt if not installed
+    const periodicCheck = setInterval(() => {
+      if (!checkInstalled() && !showPrompt) {
+        setShowPrompt(true);
+      }
+    }, 30000); // Check every 30 seconds
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      clearTimeout(showPromptTimer);
+      clearInterval(periodicCheck);
     };
-  }, []);
+  }, [showPrompt]);
 
   const handleInstall = async () => {
     if (!deferredPrompt) return;
@@ -70,12 +89,23 @@ export const InstallPrompt: React.FC = () => {
   };
 
   const handleDismiss = () => {
+    // Temporarily hide, but will show again after delay
     setShowPrompt(false);
-    localStorage.setItem('pwa_install_dismissed', 'true');
+    // Show again after 1 minute
+    setTimeout(() => {
+      if (!isInstalled) {
+        setShowPrompt(true);
+      }
+    }, 60000);
   };
 
-  // Don't show if already installed or no prompt available
-  if (isInstalled || !showPrompt || !deferredPrompt) {
+  // Don't show if already installed
+  if (isInstalled) {
+    return null;
+  }
+
+  // Show prompt even if deferredPrompt is not available (for iOS or when event hasn't fired)
+  if (!showPrompt) {
     return null;
   }
 
@@ -94,18 +124,33 @@ export const InstallPrompt: React.FC = () => {
               Install SaveCircle
             </h3>
             <p className="text-xs text-gray-600 dark:text-gray-400">
-              Add to your home screen for quick access
+              {isIOS 
+                ? 'Tap Share → Add to Home Screen' 
+                : 'Add to your home screen for quick access'
+              }
             </p>
           </div>
 
           {/* Actions */}
           <div className="flex items-center gap-2">
-            <button
-              onClick={handleInstall}
-              className="px-4 py-2 bg-primary text-primary-content rounded-xl font-semibold text-sm hover:opacity-90 active:scale-95 transition-all"
-            >
-              Install
-            </button>
+            {deferredPrompt ? (
+              <button
+                onClick={handleInstall}
+                className="px-4 py-2 bg-primary text-primary-content rounded-xl font-semibold text-sm hover:opacity-90 active:scale-95 transition-all"
+              >
+                Install
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  // For iOS or when prompt not available, just hide temporarily
+                  handleDismiss();
+                }}
+                className="px-4 py-2 bg-primary text-primary-content rounded-xl font-semibold text-sm hover:opacity-90 active:scale-95 transition-all"
+              >
+                Got it
+              </button>
+            )}
             <button
               onClick={handleDismiss}
               className="p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
