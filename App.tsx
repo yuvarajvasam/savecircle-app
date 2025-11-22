@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import { Home } from './pages/Home';
 import { Circles } from './pages/Circles';
 import { Learn } from './pages/Learn'; 
@@ -239,6 +240,7 @@ const App: React.FC = () => {
           </Routes>
         </div>
       </div>
+      <Analytics />
     </HashRouter>
   );
 };
