@@ -10,7 +10,7 @@ interface ShareModalProps {
   url?: string;
 }
 
-export const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, title, text, url = 'https://savecircle.app' }) => {
+export const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, title, text, url = 'https://uvsavecircle.vercel.app' }) => {
   const [copied, setCopied] = useState(false);
   
   if (!isOpen) return null;

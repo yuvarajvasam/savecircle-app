@@ -12,18 +12,19 @@ const StreakShareModal = ({ isOpen, onClose, streak, user }: any) => {
 
   const handleShare = async () => {
     const text = `I'm on a ${streak} day savings streak on SaveCircle! 🔥 Can you beat me?`;
+    const url = 'https://uvsavecircle.vercel.app';
     if (navigator.share) {
       try {
         await navigator.share({
           title: 'SaveCircle Streak',
           text: text,
-          url: 'https://savecircle.app',
+          url: url,
         });
       } catch (err) {
         console.log('Share cancelled');
       }
     } else {
-        navigator.clipboard.writeText(text + ' https://savecircle.app');
+        navigator.clipboard.writeText(text + ' ' + url);
         alert('Copied to clipboard!');
     }
   };

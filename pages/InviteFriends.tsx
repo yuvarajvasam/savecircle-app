@@ -20,7 +20,7 @@ export const InviteFriends: React.FC = () => {
   
   // Dynamic invite code based on user name
   const inviteCode = (user.name.replace(/[^a-zA-Z]/g, '').substring(0, 4).toUpperCase() || "USER") + "8821";
-  const inviteLink = `savecircle.app/join/${inviteCode}`;
+  const inviteLink = `https://uvsavecircle.vercel.app/join/${inviteCode}`;
 
   const [contacts, setContacts] = useState<Contact[]>([
     { id: '1', name: 'Aria Patel', handle: '@aria_p', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC4hNRTiUU6IhZtQseEYFGvpT4GScE-fnd-eYMhIuGsKz1D0uclsAsi8OBzE6XGS2Hp2Si1tRrmyyWl2kx1ZN26i7wvl6BEKu827PNaN68jLY93GaDZpgFGEP_eA6PdGqe04--GI1PvSQJemV_Driq7bG4JbZ8ntVKp71NSXXY4ZbrdvRlYcctQWT21KogV8vFYw3fl00l8m9gl7CE447ARSu-3BryZjBVojstVTSto2LPrM_-lBurimBl7D_lSjCsdYvLJy-DSrUc', status: 'invite' },
