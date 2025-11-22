@@ -18,18 +18,18 @@ if (!fs.existsSync(publicDir)) {
 }
 
 // Create a simple icon with SaveCircle branding
-// Using the primary color #c9f158 (lime green) on dark background
+// Circle on dark background matching onboarding design (like the START button)
 async function generateIcon(size) {
   const svg = `
     <svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
-      <rect width="${size}" height="${size}" fill="#202020"/>
-      <circle cx="${size/2}" cy="${size/2}" r="${size * 0.35}" fill="#c9f158"/>
-      <text x="${size/2}" y="${size/2 + size * 0.1}" 
-            font-family="Arial, sans-serif" 
-            font-size="${size * 0.25}" 
-            font-weight="bold"
-            fill="#202020" 
-            text-anchor="middle">SC</text>
+      <!-- Dark background -->
+      <rect width="${size}" height="${size}" fill="#202020" rx="${size * 0.15}"/>
+      <!-- Outer ring (subtle gray, like the track) -->
+      <circle cx="${size/2}" cy="${size/2}" r="${size * 0.44}" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="${size * 0.03}"/>
+      <!-- Main white circle (matching the START button) -->
+      <circle cx="${size/2}" cy="${size/2}" r="${size * 0.375}" fill="#ffffff"/>
+      <!-- Subtle inner shadow for depth -->
+      <circle cx="${size/2}" cy="${size/2}" r="${size * 0.35}" fill="none" stroke="rgba(0,0,0,0.1)" stroke-width="${size * 0.01}"/>
     </svg>
   `;
 
