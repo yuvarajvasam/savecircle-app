@@ -18,14 +18,14 @@ if (!fs.existsSync(publicDir)) {
 }
 
 // Create a simple icon with SaveCircle branding
-// Lime green circle on dark background - clean and minimalist
+// Lime green circle outline on dark background - clean and minimalist
 async function generateIcon(size) {
   const svg = `
     <svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
       <!-- Dark grey background -->
       <rect width="${size}" height="${size}" fill="#202020" rx="${size * 0.2}"/>
-      <!-- Vibrant lime green circle -->
-      <circle cx="${size/2}" cy="${size/2}" r="${size * 0.38}" fill="#c9f158"/>
+      <!-- Vibrant lime green circle outline -->
+      <circle cx="${size/2}" cy="${size/2}" r="${size * 0.38}" fill="none" stroke="#c9f158" stroke-width="${size * 0.08}"/>
     </svg>
   `;
 
